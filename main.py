@@ -1,32 +1,56 @@
 import pygame
 import random
 import time
+import tkinter as tk
 from sprite import *
 from settings import *
+from tkinter import filedialog
+
+def chosen_image():
+        window = tk.Tk()
+        window.withdraw()
+        image_path = filedialog.askopenfilename(
+                filetypes=[("Image Files", "*.png *.jpg *.jpeg *.bmp")]
+        )
+        window.destroy()
+        return image_path
+
 
 class Game: 
         def __init__(self):
                 pygame.init()
-                self.screen = pygame.display.set_mode ((width, height))
+                self.screen = pygame.display.set_mode ((WIDTH, HEIGHT))
                 pygame.display.set_caption(tile)
                 self.clock = pygame.time.Clock()
 
         def new(self):
-                pass
+                self.won = False
+                image_path = chosen_image()
+                if not image_path:
+                        pygame.quit()
+                        quit(0)
+                raw_image = pygame.image.load(image_path)
+                grid_size = GAME_SIZE * TILESIZE
+                self.image = pygame.transform.scale(raw_image, (grid_size, grid_size))
+                self.board = board(self.image)
         
         def run(self):
                 self.playing = True
                 while self.playing:
                         self.clock.tick(FPS)
                         self.events()
+                        self.update()
                         self.draw()
-                pass
         
         def update(self):
-                pass
+                if self.board.is_solved():
+                        self.won = True
+                        self.playing = False
         
         def draw(self):
-                pass
+                self.screen.fill(BGCOLOUR)
+                self.board.draw(self.screen)
+                pygame.display.flip()
         
         def events(self):
                 for event in pygame.event.get():
