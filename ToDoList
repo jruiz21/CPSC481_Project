@@ -1,0 +1,11 @@
+# MAIN TASK TO BE DONE
+  # Create an instructions page (or just put it in the readme)
+  # Implement the A* search function
+  # Develop the controls (will we be moving the blank space or should you be able to click a tile and move it)
+  # Set up the scoring system that MIGHT save the high score after each go through
+
+# Secondary Task if We Have Time
+  # Expand the game size (15 piece, 24 piece, etc)
+  # Add sounds
+  # "Personalize" the game
+  
