@@ -1,3 +1,4 @@
+from hints import a_star
 import pygame
 import random
 import time
@@ -33,6 +34,7 @@ class Game:
                 grid_size = GAME_SIZE * TILESIZE
                 self.image = pygame.transform.scale(raw_image, (grid_size, grid_size))
                 self.board = board(self.image)
+                self.hint_tile = None
         
         def run(self):
                 self.playing = True
@@ -54,7 +56,13 @@ class Game:
         
         def events(self):
                 for event in pygame.event.get():
-                        if event.type == pygame.QUIT:
+                        if event.type == pygame.KEYDOWN:
+                                if event.key == pygame.K_h:
+                                        curr_state = self.board.get_numbered_state()
+                                        next_state = a_star(curr_state)
+                                        self.hint_tile = self.get_tile_to_highlight(curr_state, next_state)
+
+                        elif event.type == pygame.QUIT:
                                 pygame.quit()
                                 quit(0)
         
