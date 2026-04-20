@@ -6,6 +6,7 @@ BLACK = (0, 0, 0)
 DARKGREY = (40, 40, 40)
 LIGHTGREY = (100, 100, 100)
 BGCOLOUR = DARKGREY
+BTN_COLOR = (40, 48, 75)
 
 # game settings
 WIDTH = 800
