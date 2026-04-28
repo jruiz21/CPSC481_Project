@@ -31,15 +31,15 @@ def load_highscore():
     try:
         with open(HIGHSCORE_FILE, "r") as f:
             data = f.read().split(",")
-            return int(data[0]), int(data[1])
+            return int(data[0]), int(data[1]), int(data[2])
     except:
-        return None, None
+        return None, None, None
 
-def save_highscore(moves, hints):
-    best_moves, _ = load_highscore()
+def save_highscore(moves, hints, time):
+    best_moves, _, _ = load_highscore()
     if best_moves is None or moves < best_moves:
         with open(HIGHSCORE_FILE, "w") as f:
-            f.write(f"{moves},{hints}")
+            f.write(f"{moves},{hints},{time}")
 
 class Game:
     def __init__(self):
@@ -55,6 +55,7 @@ class Game:
         self.hint_tile = None
         self.hints_used = 0
         self.used_solve = False
+        self.start_time = pygame.time.get_ticks()
         if not reuse_image or not hasattr(self, 'image'):
             image_path = chosen_image()
             if not image_path:
@@ -88,8 +89,9 @@ class Game:
         if self.board.is_solved():
             self.won = True
             self.playing = False
+            self.elapsed_time = (pygame.time.get_ticks() - self.start_time) // 1000
             if not self.used_solve:
-                save_highscore(self.board.moves, self.hints_used)
+                save_highscore(self.board.moves, self.hints_used, self.elapsed_time)
         
     def draw(self):
         self.screen.fill(BGCOLOUR)
@@ -101,16 +103,25 @@ class Game:
             pygame.draw.rect(self.screen, (255, 255, 0), (x, y, TILESIZE, TILESIZE), 5)
         moves_text = self.font.render(f"Moves: {self.board.moves}", True, WHITE)
         self.screen.blit(moves_text, (GAME_SIZE * TILESIZE + 20, 20))
-        hs_moves, hs_hints = load_highscore()
+        hs_moves, hs_hints, hs_time = load_highscore()
         if hs_moves is not None:
-            hs_text = self.small_font.render(f"Best: {hs_moves} moves ({hs_hints} hints)", True, WHITE)
-            self.screen.blit(hs_text, (GAME_SIZE * TILESIZE + 20, 70))
-        pygame.draw.rect(self.screen, LIGHTGREY, (GAME_SIZE * TILESIZE + 20, 120, 120, 45))
+            hs_minutes = hs_time // 60
+            hs_seconds = hs_time % 60
+            hs_line1 = self.small_font.render(f"Best: {hs_moves} moves, using {hs_hints} hints", True, WHITE)
+            hs_line2 = self.small_font.render(f"Time: {hs_minutes:02d}:{hs_seconds:02d}", True, WHITE)
+            self.screen.blit(hs_line1, (GAME_SIZE * TILESIZE + 20, 70))
+            self.screen.blit(hs_line2, (GAME_SIZE * TILESIZE + 20, 100))
+        elapsed = (pygame.time.get_ticks() - self.start_time) // 1000
+        minutes = elapsed // 60
+        seconds = elapsed % 60
+        timer_text = self.small_font.render(f"Time: {minutes:02d}:{seconds:02d}", True, WHITE)
+        self.screen.blit(timer_text, (GAME_SIZE * TILESIZE + 20, 340))
+        pygame.draw.rect(self.screen, LIGHTGREY, (GAME_SIZE * TILESIZE + 20, 220, 120, 45))
         hint_text = self.small_font.render("Hint", True, BLACK)
-        self.screen.blit(hint_text, (GAME_SIZE * TILESIZE + 50, 133))
-        pygame.draw.rect(self.screen, LIGHTGREY, (GAME_SIZE * TILESIZE + 20, 180, 120, 45))
+        self.screen.blit(hint_text, (GAME_SIZE * TILESIZE + 50, 233))
+        pygame.draw.rect(self.screen, LIGHTGREY, (GAME_SIZE * TILESIZE + 20, 280, 120, 45))
         solve_text = self.small_font.render("Solve", True, BLACK)
-        self.screen.blit(solve_text, (GAME_SIZE * TILESIZE + 48, 193))
+        self.screen.blit(solve_text, (GAME_SIZE * TILESIZE + 48, 293))
         if self.won:
             self.win_screen()
         pygame.display.flip()
@@ -128,8 +139,8 @@ class Game:
                     next_state = a_star(curr_state)
                     self.hint_tile = self.get_tile_to_highlight(curr_state, next_state)
             if event.type == pygame.MOUSEBUTTONDOWN and not self.won:
-                hint_rect = pygame.Rect(GAME_SIZE * TILESIZE + 20, 120, 120, 45)
-                solve_rect = pygame.Rect(GAME_SIZE * TILESIZE + 20, 180, 120, 45)
+                hint_rect = pygame.Rect(GAME_SIZE * TILESIZE + 20, 220, 120, 45)
+                solve_rect = pygame.Rect(GAME_SIZE * TILESIZE + 20, 280, 120, 45)
                 if hint_rect.collidepoint(pygame.mouse.get_pos()):
                     curr_state = self.board.get_numbered_state()
                     next_state = a_star(curr_state)
@@ -150,6 +161,10 @@ class Game:
         hints_text = self.small_font.render(f"Hints used: {self.hints_used}", True, WHITE)
         restart_text = self.small_font.render("Press R to play again", True, WHITE)
         cx = WIDTH // 2
+        minutes = self.elapsed_time // 60
+        seconds = self.elapsed_time % 60
+        time_text = self.small_font.render(f"Time: {minutes:02d}:{seconds:02d}", True, WHITE)
+        self.screen.blit(time_text, time_text.get_rect(center=(cx, HEIGHT // 2 + 120)))
         self.screen.blit(win_text, win_text.get_rect(center=(cx, HEIGHT // 2 - 50)))
         self.screen.blit(moves_text, moves_text.get_rect(center=(cx, HEIGHT // 2)))
         self.screen.blit(hints_text, hints_text.get_rect(center=(cx, HEIGHT // 2 + 80)))
