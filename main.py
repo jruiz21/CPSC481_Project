@@ -69,6 +69,8 @@ class Game:
             raw_image = pygame.image.load(image_path)
             self.image = pygame.transform.scale(raw_image, (self.grid_width, self.grid_height))
         self.board = Board(self.image)
+        self.initial_state = self.board.get_numbered_state()
+        self.optimal_moves = None
         
     def run(self):
         self.playing = True
@@ -94,6 +96,7 @@ class Game:
             self.won = True
             self.playing = False
             self.elapsed_time = (pygame.time.get_ticks() - self.start_time) // 1000
+            self.optimal_moves = self._get_optimal_moves(self.initial_state)
             if not self.used_solve:
                 save_highscore(self.board.moves, self.hints_used, self.elapsed_time)
         
@@ -121,7 +124,6 @@ class Game:
             hs_line1 = self.small_font.render(f"Best: {hs_moves} moves, using {hs_hints} hints", True, WHITE)
             hs_line2 = self.small_font.render(f"Time: {hs_minutes:02d}:{hs_seconds:02d}", True, WHITE)
             self.screen.blit(hs_line1, hs_line1.get_rect(center=(center_x, 85)))
-            # self.screen.blit(hs_line2, (center_x, 100))
         # Bottom UI
         elapsed = (pygame.time.get_ticks() - self.start_time) // 1000
         # minutes = elapsed // 60
@@ -192,6 +194,7 @@ class Game:
         self.screen.blit(overlay, (0, 0))
         win_text = self.font.render("Puzzle Solved!", True, WHITE)
         moves_text = self.small_font.render(f"Completed in {self.board.moves} moves", True, WHITE)
+        optimal_text = self.small_font.render(f"Optimal moves: {self.optimal_moves}", True, WHITE)
         hints_text = self.small_font.render(f"Hints used: {self.hints_used}", True, WHITE)
         restart_text = self.small_font.render("Press R to play again", True, WHITE)
         cx = WIDTH // 2
@@ -201,6 +204,7 @@ class Game:
         self.screen.blit(time_text, time_text.get_rect(center=(cx, HEIGHT // 2 + 120)))
         self.screen.blit(win_text, win_text.get_rect(center=(cx, HEIGHT // 2 - 50)))
         self.screen.blit(moves_text, moves_text.get_rect(center=(cx, HEIGHT // 2)))
+        self.screen.blit(optimal_text, optimal_text.get_rect(center=(cx, HEIGHT // 2 + 25)))
         self.screen.blit(hints_text, hints_text.get_rect(center=(cx, HEIGHT // 2 + 80)))
         self.screen.blit(restart_text, restart_text.get_rect(center=(cx, HEIGHT // 2 + 50)))
 
@@ -233,6 +237,19 @@ class Game:
             if self.board.is_solved():
                 self.hints_used = (self.board.moves - temp_moves)
                 break
+
+    def _get_optimal_moves(self, initial_state):
+        state = initial_state
+        count = 0
+        while True:
+            next_state = a_star(state)
+            if next_state is None:
+                break
+            state = next_state
+            count += 1
+            if state == list(range(1, 9)) + [0]:
+                break
+        return count
 
 game = Game()
 game.new()
