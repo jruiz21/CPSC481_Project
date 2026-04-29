@@ -215,6 +215,7 @@ class Game:
         return None
     
     def solve_puzzle(self):
+        temp_moves = self.board.moves
         self.used_solve = True
         curr_state = self.board.get_numbered_state()
         state = curr_state
@@ -230,7 +231,7 @@ class Game:
                 pygame.time.delay(200)
             state = self.board.get_numbered_state()
             if self.board.is_solved():
-                self.hints_used = self.board.moves
+                self.hints_used = (self.board.moves - temp_moves)
                 break
 
 game = Game()
