@@ -9,9 +9,9 @@ class Tile:
         self.correct_pos = correct_pos
         self.current_pos = list(current_pos)
 
-    def draw(self, surface):
-        x = self.current_pos[0] * TILESIZE
-        y = self.current_pos[1] * TILESIZE
+    def draw(self, surface, x_offset, y_offset):
+        x = x_offset + self.current_pos[0] * TILESIZE
+        y = y_offset + self.current_pos[1] * TILESIZE
         surface.blit(self.image, (x, y))
         pygame.draw.rect(surface, BLACK, (x, y, TILESIZE, TILESIZE), 2)
 
@@ -73,9 +73,9 @@ class Board:
                 return tile
         return None
 
-    def draw(self, surface):
+    def draw(self, surface, x_off, y_off):
         for tile in self.tiles:
-            tile.draw(surface)
+            tile.draw(surface, x_off, y_off)
 
     def is_solved(self):
         return all(tile.is_correct() for tile in self.tiles)
