@@ -13,3 +13,8 @@ The user will try to complete the puzzle with as least moves as possible. After 
 # What search/heuristic is being used
 
 We will be using A* to create the hint system for the user. If the user uses a hint, their amount of moves done will increase
+
+# How to run
+
+MACOS: python3 main.py
+WINDOWS: python main.py
